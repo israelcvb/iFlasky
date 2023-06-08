@@ -4,4 +4,6 @@
 
 {% block page_content %}
 <h1>Olá, Mundo!</h1>
+<p>Hora e data local: {{ moment(current_time).format('L') }}</p>
+<p>Isso há {{ moment(current_time).fromNow(refresh=True) }}</p>
 {% endblock %}
