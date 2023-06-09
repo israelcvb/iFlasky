@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, flash, redirect, render_template, session, url_for
 from flask_bootstrap import Bootstrap
+from flask_mail import Mail, Message
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
@@ -15,10 +16,28 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Eu e a Mucura na canoa!'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASEDIR, 'data.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['FLASK_MAIL_SUBJECT_PREFIX'] = '[iFlasky]'
+app.config['FLASK_MAIL_SENDER'] = 'iFlasky Admin <iflasky@example.com>'
+app.config['FLASK_ADMIN'] = os.environ.get('FLASK_ADMIN')
 
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
+mail = Mail(app)
 migrate = Migrate(app, db)
+
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config['FLASK_MAIL_SUBJECT_PREFIX'] + subject,
+                  sender=app.config['FLASK_MAIL_SENDER'],
+                  recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    mail.send(msg)
 
 
 class NameForm(FlaskForm):
@@ -61,6 +80,8 @@ def index():
             db.session.add(user)
             db.session.commit()
             session['known'] = False
+            if app.config['FLASK_ADMIN']:
+                send_email(app.config['FLASK_ADMIN'], 'Novo usuário!', 'mail/new_user', user=user)
         else:
             session['known'] = True
         session['name'] = form.name.data

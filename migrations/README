@@ -18,4 +18,4 @@ script de migração que você acabou de remover, além de qualquer outra altera
 4. Revise e aplique o script de migração, conforme antse.
 
 
-Consulte a documentação do Flask-Migrate ( https://flask-migrate.readthedocs.io )
+Consulte a documentação do Flask-Migrate ( https://flask-migrate.readthedocs.io ).
